@@ -21,6 +21,11 @@ public class ZoomEngineInfinityImageView: UIImageView {
     var isHandlingGesture: Bool {
         return hostImageView != nil
     }
+   
+    public override init(image: UIImage?){
+        super.init(image: image)
+        commonInit()
+    }
     override init(frame: CGRect) {
             super.init(frame: frame)
             commonInit()
