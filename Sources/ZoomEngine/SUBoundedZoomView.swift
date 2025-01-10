@@ -8,18 +8,18 @@
 import Foundation
 import SwiftUI
 
-struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
+public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     var minScale: CGFloat
     var maxScale: CGFloat
     var content: Content
     
-    init(minScale: CGFloat = 1.0, maxScale: CGFloat = 4.0, @ViewBuilder content: () -> Content) {
+    public init(minScale: CGFloat = 1.0, maxScale: CGFloat = 4.0, @ViewBuilder content: () -> Content) {
         self.minScale = minScale
         self.maxScale = maxScale
         self.content = content()
     }
     
-    func makeUIView(context: Context) -> ZoomEngineBoundedView {
+    public func makeUIView(context: Context) -> ZoomEngineBoundedView {
         let hostingController = UIHostingController(rootView: content)
         let zoomView = ZoomEngineBoundedView(frame: .zero, minimumZoom: minScale, maximumZoom: maxScale)
         
@@ -35,7 +35,7 @@ struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
         return zoomView
     }
     
-    func updateUIView(_ uiView: ZoomEngineBoundedView, context: Context) {
+    public func updateUIView(_ uiView: ZoomEngineBoundedView, context: Context) {
         uiView.minScale = minScale
         uiView.maxScale = maxScale
         
@@ -46,7 +46,7 @@ struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     }
 }
 
-extension View {
+public extension View {
     func zoomable(minScale: CGFloat = 1.0, maxScale: CGFloat = 4.0) -> some View {
         SUBoundedZoomView(minScale: minScale, maxScale: maxScale) {
             self
