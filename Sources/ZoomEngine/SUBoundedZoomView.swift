@@ -8,10 +8,13 @@
 import Foundation
 import SwiftUI
 
-
-public class SUBoundedZoomViewContainer: UIView {
+public class SUBoundedZoomViewContainer: UIView, @preconcurrency ZoomEngineDelegate {
+    public func zoomStateChange(isZooming: Bool) {
+        delegate?.zoomStateChange(isZooming: isZooming)
+    }
     
     private var containerView: ZoomEngineBoundedView?
+    weak var delegate: ZoomEngineDelegate?
     
     init() {
         super.init(frame: .zero)
@@ -26,6 +29,7 @@ public class SUBoundedZoomViewContainer: UIView {
     
     private func setupContainer() {
         let zoomView = ZoomEngineBoundedView()
+        zoomView.delegate = self
         self.containerView = zoomView
         
         zoomView.translatesAutoresizingMaskIntoConstraints = false
@@ -58,26 +62,23 @@ public class SUBoundedZoomViewContainer: UIView {
     }
 }
 
-
-public extension View {
-    func boundedZoomable(minScale: CGFloat = 1.0, maxScale: CGFloat = 4.0) -> some View {
-        SUBoundedZoomView { self }
-        .clipShape(Rectangle())
-    }
-}
-
-
-
 public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
+    @Binding var isZooming: Bool
     private let content: Content
     
-    public init(@ViewBuilder content: () -> Content) {
+    public init(isZooming: Binding<Bool>, @ViewBuilder content: () -> Content) {
+        self._isZooming = isZooming
         self.content = content()
+    }
+    
+    public func makeCoordinator() -> Coordinator {
+        Coordinator(self)
     }
     
     public func makeUIView(context: Context) -> SUBoundedZoomViewContainer {
         let container = SUBoundedZoomViewContainer()
         container.clipsToBounds = true
+        container.delegate = context.coordinator
         let hostingController = UIHostingController(rootView: content)
         hostingController.view.backgroundColor = .clear
         _ = container.addSubView(hostingController.view)
@@ -85,8 +86,19 @@ public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     }
     
     public func updateUIView(_ uiView: SUBoundedZoomViewContainer, context: Context) {
+        // No state updates are required here for now.
+    }
+    
+    public class Coordinator: NSObject, @preconcurrency ZoomEngineDelegate {
+        var parent: SUBoundedZoomView
+        
+        init(_ parent: SUBoundedZoomView) {
+            self.parent = parent
+        }
+        
+        @MainActor public func zoomStateChange(isZooming: Bool) {
+                self.parent.isZooming = isZooming
+            
+        }
     }
 }
-
-
-

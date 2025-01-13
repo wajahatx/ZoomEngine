@@ -9,11 +9,16 @@ import Foundation
 import SwiftUI
 import UIKit
 
-
-public class SUInfinityImageViewContainer: UIView {
+public class SUInfinityImageViewContainer: UIView, @preconcurrency ZoomEngineDelegate {
+    public func zoomStateChange(isZooming: Bool) {
+        delegate?.zoomStateChange(isZooming: isZooming)
+    }
     
     private let imageView: ZoomEngineInfinityImageView
     private let cornerRadius: CGFloat
+    
+    weak var delegate: ZoomEngineDelegate?
+    
     init(image: UIImage?, cornerRadius: CGFloat) {
         self.imageView = ZoomEngineInfinityImageView(image: image)
         self.cornerRadius = cornerRadius
@@ -30,6 +35,7 @@ public class SUInfinityImageViewContainer: UIView {
     }
     
     private func setupImageView() {
+        self.imageView.delegate = self
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
@@ -49,26 +55,45 @@ public class SUInfinityImageViewContainer: UIView {
 }
 
 public struct SUInfinityImageView: UIViewRepresentable {
-    
     @Binding var image: UIImage?
-    let cornerRdius: CGFloat
-    public init(image: Binding<UIImage?>, cornerRdius: CGFloat = 20) {
+    @Binding var isZooming: Bool
+    let cornerRadius: CGFloat
+    
+    public init(image: Binding<UIImage?>, isZooming: Binding<Bool>, cornerRadius: CGFloat = 20) {
         self._image = image
-        self.cornerRdius = cornerRdius
+        self._isZooming = isZooming
+        self.cornerRadius = cornerRadius
+    }
+    
+    public func makeCoordinator() -> Coordinator {
+        Coordinator(self)
     }
     
     public func makeUIView(context: Context) -> SUInfinityImageViewContainer {
-        let imageViewContainer = SUInfinityImageViewContainer(image: image, cornerRadius: cornerRdius)
+        let imageViewContainer = SUInfinityImageViewContainer(image: image, cornerRadius: cornerRadius)
+        imageViewContainer.delegate = context.coordinator
         return imageViewContainer
     }
     
     public func updateUIView(_ uiView: SUInfinityImageViewContainer, context: Context) {
         uiView.updateImage(image)
     }
+    
+    public class Coordinator: NSObject, @preconcurrency ZoomEngineDelegate {
+        @MainActor public func zoomStateChange(isZooming: Bool) {
+                self.parent.isZooming = isZooming
+            
+        }
+        
+        var parent: SUInfinityImageView
+        
+        init(_ parent: SUInfinityImageView) {
+            self.parent = parent
+        }
+    }
 }
 
-
-extension UIImage{
+extension UIImage {
     func withRoundedCorners(radius: CGFloat? = nil) -> UIImage? {
         guard let radius else { return self }
         let maxRadius = min(size.width, size.height) / 2
