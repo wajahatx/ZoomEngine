@@ -2,6 +2,13 @@
 
 ZoomEngine is a Swift package that provides powerful zooming capabilities for images and views in SwiftUI and UIKit. It includes components for infinite zooming and bounded zooming to suit various use cases.
 
+
+
+https://github.com/user-attachments/assets/59655fd2-ee0b-4332-bd8d-d80b66c15475
+
+
+
+
 ## Features
 - Infinite zooming with `SUInfinityImageView`.
 - Bounded zooming with `SUBoundedZoomView`.
