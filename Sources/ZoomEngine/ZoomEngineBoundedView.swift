@@ -93,7 +93,7 @@ public class ZoomEngineBoundedView: UIView {
     }
     
     private func endGesture() {
-        if isViewOutOfBounds() {
+        if !isScaledFrameFullyCoveringParent() {
             animateToValidScale()
         }
         isHandlingGesture = false
@@ -132,15 +132,15 @@ public class ZoomEngineBoundedView: UIView {
         self.center = adjustedCenter
     }
     
-    private func isViewOutOfBounds() -> Bool {
+    private func isScaledFrameFullyCoveringParent() -> Bool {
         guard let superview = self.superview else { return false }
-        let scaledFrame = self.frame
-        let superviewBounds = superview.bounds
-        
-        return scaledFrame.minX > superviewBounds.minX ||
-            scaledFrame.maxX < superviewBounds.maxX ||
-            scaledFrame.minY > superviewBounds.minY ||
-            scaledFrame.maxY < superviewBounds.maxY
+            let scaledFrame = self.frame
+            let superviewBounds = superview.bounds
+            
+        return scaledFrame.minX <= superviewBounds.minX &&
+                   scaledFrame.minY <= superviewBounds.minY &&
+                   scaledFrame.maxX >= superviewBounds.maxX &&
+                   scaledFrame.maxY >= superviewBounds.maxY
     }
     
     private func getCenter(_ gesture: UIPinchGestureRecognizer, targetView: UIView?) -> CGPoint? {
