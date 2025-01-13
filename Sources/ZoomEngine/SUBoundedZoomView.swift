@@ -9,64 +9,84 @@ import Foundation
 import SwiftUI
 
 
-public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
-    var minScale: CGFloat
-    var maxScale: CGFloat
-    var content: Content
-
-    public init(minScale: CGFloat = 1.0, maxScale: CGFloat = 4.0, @ViewBuilder content: () -> Content) {
-        self.minScale = minScale
-        self.maxScale = maxScale
-        self.content = content()
+public class SUBoundedZoomViewContainer: UIView {
+    
+    private var containerView: ZoomEngineBoundedView?
+    
+    init() {
+        super.init(frame: .zero)
+        setupContainer()
+        self.backgroundColor = .clear
     }
-
-    public func makeUIView(context: Context) -> ZoomEngineBoundedView {
-        let zoomView = ZoomEngineBoundedView(frame: .zero, minimumZoom: minScale, maximumZoom: maxScale)
-
-        let hostingConfiguration = UIHostingConfiguration { content }
-        let hostingView = hostingConfiguration.makeContentView()
-
-        hostingView.translatesAutoresizingMaskIntoConstraints = false
-        zoomView.addSubview(hostingView)
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupContainer()
+    }
+    
+    private func setupContainer() {
+        let zoomView = ZoomEngineBoundedView()
+        self.containerView = zoomView
+        
+        zoomView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(zoomView)
         
         NSLayoutConstraint.activate([
-            hostingView.topAnchor.constraint(equalTo: zoomView.topAnchor),
-            hostingView.leadingAnchor.constraint(equalTo: zoomView.leadingAnchor),
-            hostingView.trailingAnchor.constraint(equalTo: zoomView.trailingAnchor),
-            hostingView.bottomAnchor.constraint(equalTo: zoomView.bottomAnchor)
+            zoomView.topAnchor.constraint(equalTo: topAnchor),
+            zoomView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            zoomView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            zoomView.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])
-
-        return zoomView
     }
-
-    public func updateUIView(_ uiView: ZoomEngineBoundedView, context: Context) {
-        uiView.minScale = minScale
-        uiView.maxScale = maxScale
-
-        if let hostingView = uiView.subviews.first {
-            hostingView.removeFromSuperview()
-            let newHostingConfiguration = UIHostingConfiguration { content }
-            let newHostingView = newHostingConfiguration.makeContentView()
-
-            newHostingView.translatesAutoresizingMaskIntoConstraints = false
-            uiView.addSubview(newHostingView)
-
-            NSLayoutConstraint.activate([
-                newHostingView.topAnchor.constraint(equalTo: uiView.topAnchor),
-                newHostingView.leadingAnchor.constraint(equalTo: uiView.leadingAnchor),
-                newHostingView.trailingAnchor.constraint(equalTo: uiView.trailingAnchor),
-                newHostingView.bottomAnchor.constraint(equalTo: uiView.bottomAnchor)
-            ])
+    
+    func addSubView(_ view: UIView) -> ZoomEngineBoundedView {
+        guard let containerView else {
+            return ZoomEngineBoundedView(frame: .zero)
         }
+        
+        view.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(view)
+        
+        NSLayoutConstraint.activate([
+            view.topAnchor.constraint(equalTo: containerView.topAnchor),
+            view.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
+            view.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: containerView.trailingAnchor)
+        ])
+        
+        return containerView
     }
 }
 
 
 public extension View {
-    func zoomable(minScale: CGFloat = 1.0, maxScale: CGFloat = 4.0) -> some View {
-        SUBoundedZoomView(minScale: minScale, maxScale: maxScale) {
-            self
-        }
-        .clipShape(Rectangle()) 
+    func boundedZoomable(minScale: CGFloat = 1.0, maxScale: CGFloat = 4.0) -> some View {
+        SUBoundedZoomView { self }
+        .clipShape(Rectangle())
     }
 }
+
+
+
+public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
+    private let content: Content
+    
+    public init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+    
+    public func makeUIView(context: Context) -> SUBoundedZoomViewContainer {
+        let container = SUBoundedZoomViewContainer()
+        container.clipsToBounds = true
+        let hostingController = UIHostingController(rootView: content)
+        hostingController.view.backgroundColor = .clear
+        _ = container.addSubView(hostingController.view)
+        return container
+    }
+    
+    public func updateUIView(_ uiView: SUBoundedZoomViewContainer, context: Context) {
+    }
+}
+
+
+

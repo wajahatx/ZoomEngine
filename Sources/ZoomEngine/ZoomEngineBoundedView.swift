@@ -27,6 +27,9 @@ public class ZoomEngineBoundedView: UIView {
             setupGestures()
     }
         
+    convenience init() {
+           self.init(frame: .zero)
+    }
     required init?(coder: NSCoder) {
             self.minScale = 1.0
             self.maxScale = 4.0
@@ -35,9 +38,7 @@ public class ZoomEngineBoundedView: UIView {
     }
     
     private func setupGestures() {
-       
         let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
-        
         self.addGestureRecognizer(pinchGesture)
     }
     
