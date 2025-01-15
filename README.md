@@ -26,6 +26,22 @@ Add ZoomEngine to your project using Swift Package Manager:
 4. Choose the package and add it to your target.
 
 ## Usage
+## UIKIT
+## Infinity Zoom
+
+
+1. Drag a `UIImageView` into your storyboard.
+2. Set the **Custom Class** of the `UIImageView` to `ZoomEngineInfinityImageView` in the Identity Inspector.
+3. (Optional) Set the delegate of `ZoomEngineInfinityImageView` to a class conforming to the `ZoomEngineDelegate` protocol for zoom state callbacks.
+
+
+## Bounded Zoom
+
+1. Drag a `UIView` into your storyboard.
+2. Set the **Custom Class** of the `UIView` to `ZoomEngineBoundedView` in the Identity Inspector.
+3. (Optional) Set the delegate of `ZoomEngineBoundedView` to a class conforming to the `ZoomEngineDelegate` protocol for zoom state callbacks.
+
+## SWIFTUI
 
 ### Importing the Library
 ```swift
