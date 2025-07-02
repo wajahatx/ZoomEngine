@@ -9,6 +9,10 @@ import Foundation
 import SwiftUI
 
 public class SUBoundedZoomViewContainer: UIView, @preconcurrency ZoomEngineDelegate {
+    public func scaleValueChange(zoomValue: CGFloat) {
+        delegate?.scaleValueChange(zoomValue: zoomValue)
+    }
+    
     public func zoomStateChange(isZooming: Bool) {
         delegate?.zoomStateChange(isZooming: isZooming)
     }
@@ -64,10 +68,12 @@ public class SUBoundedZoomViewContainer: UIView, @preconcurrency ZoomEngineDeleg
 
 public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     @Binding var isZooming: Bool
+    @Binding var scaleValue: CGFloat
     private let content: Content
     
-    public init(isZooming: Binding<Bool>, @ViewBuilder content: () -> Content) {
+    public init(isZooming: Binding<Bool>, scaleValue: Binding<CGFloat>,@ViewBuilder content: () -> Content) {
         self._isZooming = isZooming
+        self._scaleValue = scaleValue
         self.content = content()
     }
     
@@ -91,6 +97,10 @@ public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     }
     
     public class Coordinator: NSObject, @preconcurrency ZoomEngineDelegate {
+        @MainActor public func scaleValueChange(zoomValue: CGFloat) {
+            self.parent.scaleValue = zoomValue
+        }
+        
         var parent: SUBoundedZoomView
         var hostingController: UIHostingController<Content>?
         
