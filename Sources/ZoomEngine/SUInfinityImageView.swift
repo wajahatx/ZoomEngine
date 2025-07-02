@@ -10,6 +10,10 @@ import SwiftUI
 import UIKit
 
 public class SUInfinityImageViewContainer: UIView, @preconcurrency ZoomEngineDelegate {
+    public func scaleValueChange(zoomValue: CGFloat) {
+        delegate?.scaleValueChange(zoomValue: zoomValue)
+    }
+    
     public func zoomStateChange(isZooming: Bool) {
         delegate?.zoomStateChange(isZooming: isZooming)
     }
@@ -80,6 +84,10 @@ public struct SUInfinityImageView: UIViewRepresentable {
     }
     
     public class Coordinator: NSObject, @preconcurrency ZoomEngineDelegate {
+        public func scaleValueChange(zoomValue: CGFloat) {
+            
+        }
+        
         @MainActor public func zoomStateChange(isZooming: Bool) {
                 self.parent.isZooming = isZooming
             
