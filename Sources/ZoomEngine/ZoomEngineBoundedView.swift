@@ -90,6 +90,7 @@ public class ZoomEngineBoundedView: UIView {
         
         self.transform = transform
         lastScale = newScale
+        delegate?.scaleValueChange(zoomValue: newScale)
     }
     
     private func endGesture() {
