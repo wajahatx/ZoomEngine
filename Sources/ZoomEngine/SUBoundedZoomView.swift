@@ -81,16 +81,18 @@ public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
         container.delegate = context.coordinator
         let hostingController = UIHostingController(rootView: content)
         hostingController.view.backgroundColor = .clear
+        context.coordinator.hostingController = hostingController
         _ = container.addSubView(hostingController.view)
         return container
     }
     
     public func updateUIView(_ uiView: SUBoundedZoomViewContainer, context: Context) {
-        // No state updates are required here for now.
+        context.coordinator.hostingController?.rootView = content
     }
     
     public class Coordinator: NSObject, @preconcurrency ZoomEngineDelegate {
         var parent: SUBoundedZoomView
+        var hostingController: UIHostingController<Content>?
         
         init(_ parent: SUBoundedZoomView) {
             self.parent = parent
