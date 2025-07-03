@@ -60,14 +60,20 @@ public class SUBoundedZoomViewContainer: UIView, @preconcurrency ZoomEngineDeleg
         
         return containerView
     }
+    public func resetZoom(animated: Bool = true, duration: TimeInterval = 0.3, completion: (() -> Void)? = nil) {
+        containerView?.resetZoom(animated: animated, duration: duration, completion: completion)
+    }
 }
 
 public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     @Binding var isZooming: Bool
     private let content: Content
     
-    public init(isZooming: Binding<Bool>, @ViewBuilder content: () -> Content) {
+    @Binding var shouldResetZoom: Bool
+    
+    public init(isZooming: Binding<Bool>, shouldResetZoom: Binding<Bool>, @ViewBuilder content: () -> Content) {
         self._isZooming = isZooming
+        self._shouldResetZoom = shouldResetZoom
         self.content = content()
     }
     
@@ -86,7 +92,13 @@ public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     }
     
     public func updateUIView(_ uiView: SUBoundedZoomViewContainer, context: Context) {
-        // No state updates are required here for now.
+        if shouldResetZoom {
+                    uiView.resetZoom()
+                    // Reset the trigger on the next run loop to avoid continuous calling
+                    DispatchQueue.main.async {
+                        self.shouldResetZoom = false
+                    }
+                }
     }
     
     public class Coordinator: NSObject, @preconcurrency ZoomEngineDelegate {

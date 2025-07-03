@@ -109,6 +109,29 @@ public class ZoomEngineBoundedView: UIView {
         gesture.isEnabled = false
         gesture.isEnabled = true
     }
+    public func resetZoom(animated: Bool = true, duration: TimeInterval = 0.3, completion: (() -> Void)? = nil) {
+            guard !isAnimatingReset else { return }
+            
+            let targetTransform = CGAffineTransform.identity
+            let targetCenter = initialCenter != .zero ? initialCenter : center
+            
+            if animated {
+                isAnimatingReset = true
+                UIView.animate(withDuration: duration, animations: {
+                    self.transform = targetTransform
+                    self.center = targetCenter
+                }) { _ in
+                    self.isAnimatingReset = false
+                    self.lastScale = self.minScale
+                    completion?()
+                }
+            } else {
+                transform = targetTransform
+                center = targetCenter
+                lastScale = minScale
+                completion?()
+            }
+        }
     
     private func resetCenterIfOutOfBounds() {
         guard let superview = self.superview else { return }
