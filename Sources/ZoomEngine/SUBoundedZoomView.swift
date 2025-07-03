@@ -73,6 +73,7 @@ public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     @Binding var isZooming: Bool
     @Binding var scaleValue: CGFloat
     @Binding var shouldResetZoom: Bool
+    private var resetTimeInterval: TimeInterval = 0.2
     private let content: Content
     
     public init(isZooming: Binding<Bool>, scaleValue: Binding<CGFloat>,shouldResetZoom: Binding<Bool>,@ViewBuilder content: () -> Content) {
@@ -99,7 +100,7 @@ public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     
     public func updateUIView(_ uiView: SUBoundedZoomViewContainer, context: Context) {
         if shouldResetZoom {
-                    uiView.resetZoom()
+                    uiView.resetZoom(duration: resetTimeInterval)
                     // Reset the trigger on the next run loop to avoid continuous calling
                     DispatchQueue.main.async {
                         self.shouldResetZoom = false
@@ -109,10 +110,15 @@ public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     }
     
     public class Coordinator: NSObject, @preconcurrency ZoomEngineDelegate {
+        
         @MainActor public func scaleValueChange(zoomValue: CGFloat) {
             self.parent.scaleValue = zoomValue
         }
-        
+        public var resetTimeInterval: TimeInterval = 0.2{
+            didSet{
+                self.parent.resetTimeInterval = resetTimeInterval
+            }
+        }
         var parent: SUBoundedZoomView
         var hostingController: UIHostingController<Content>?
         
