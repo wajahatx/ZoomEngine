@@ -40,7 +40,6 @@ public class ZoomEngineBoundedView: UIView {
     private func setupGestures() {
         let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
         self.addGestureRecognizer(pinchGesture)
-        self.isExclusiveTouch = true
     }
     
     @objc private func handlePinch(_ gesture: UIPinchGestureRecognizer) {
