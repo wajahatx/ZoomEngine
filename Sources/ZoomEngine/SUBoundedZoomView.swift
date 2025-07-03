@@ -76,10 +76,11 @@ public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     private var resetTimeInterval: TimeInterval = 0.2
     private let content: Content
     
-    public init(isZooming: Binding<Bool>, scaleValue: Binding<CGFloat>,shouldResetZoom: Binding<Bool>,@ViewBuilder content: () -> Content) {
+    public init(isZooming: Binding<Bool>, scaleValue: Binding<CGFloat>,shouldResetZoom: Binding<Bool>,reseetTimeInterval: TimeInterval = 0.2,@ViewBuilder content: () -> Content) {
         self._isZooming = isZooming
         self._shouldResetZoom = shouldResetZoom
         self._scaleValue = scaleValue
+        self.resetTimeInterval = reseetTimeInterval
         self.content = content()
     }
     
@@ -120,9 +121,6 @@ public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
         
         init(_ parent: SUBoundedZoomView) {
             self.parent = parent
-        }
-        public func setResetTime(duration: TimeInterval) {
-            self.parent.resetTimeInterval = duration
         }
         
         @MainActor public func zoomStateChange(isZooming: Bool) {
