@@ -64,7 +64,7 @@ public class SUBoundedZoomViewContainer: UIView, @preconcurrency ZoomEngineDeleg
         
         return containerView
     }
-    public func resetZoom(animated: Bool = true, duration: TimeInterval = 0.1, completion: (() -> Void)? = nil) {
+    public func resetZoom(animated: Bool = true, duration: TimeInterval = 0.2, completion: (() -> Void)? = nil) {
         containerView?.resetZoom(animated: animated, duration: duration, completion: completion)
     }
 }
