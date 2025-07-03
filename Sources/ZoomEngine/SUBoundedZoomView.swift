@@ -9,6 +9,10 @@ import Foundation
 import SwiftUI
 
 public class SUBoundedZoomViewContainer: UIView, @preconcurrency ZoomEngineDelegate {
+    public func scaleValueChange(zoomValue: CGFloat) {
+        delegate?.scaleValueChange(zoomValue: zoomValue)
+    }
+    
     public func zoomStateChange(isZooming: Bool) {
         delegate?.zoomStateChange(isZooming: isZooming)
     }
@@ -67,13 +71,16 @@ public class SUBoundedZoomViewContainer: UIView, @preconcurrency ZoomEngineDeleg
 
 public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     @Binding var isZooming: Bool
+    @Binding var scaleValue: CGFloat
     private let content: Content
     
+    public init(isZooming: Binding<Bool>, scaleValue: Binding<CGFloat>,@ViewBuilder content: () -> Content) {
     @Binding var shouldResetZoom: Bool
     
     public init(isZooming: Binding<Bool>, shouldResetZoom: Binding<Bool>, @ViewBuilder content: () -> Content) {
         self._isZooming = isZooming
         self._shouldResetZoom = shouldResetZoom
+        self._scaleValue = scaleValue
         self.content = content()
     }
     
@@ -87,6 +94,7 @@ public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
         container.delegate = context.coordinator
         let hostingController = UIHostingController(rootView: content)
         hostingController.view.backgroundColor = .clear
+        context.coordinator.hostingController = hostingController
         _ = container.addSubView(hostingController.view)
         return container
     }
@@ -99,10 +107,16 @@ public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
                         self.shouldResetZoom = false
                     }
                 }
+        context.coordinator.hostingController?.rootView = content
     }
     
     public class Coordinator: NSObject, @preconcurrency ZoomEngineDelegate {
+        @MainActor public func scaleValueChange(zoomValue: CGFloat) {
+            self.parent.scaleValue = zoomValue
+        }
+        
         var parent: SUBoundedZoomView
+        var hostingController: UIHostingController<Content>?
         
         init(_ parent: SUBoundedZoomView) {
             self.parent = parent
