@@ -64,16 +64,23 @@ public class SUBoundedZoomViewContainer: UIView, @preconcurrency ZoomEngineDeleg
         
         return containerView
     }
+    public func resetZoom(animated: Bool = true, duration: TimeInterval = 0.2, completion: (() -> Void)? = nil) {
+        containerView?.resetZoom(animated: animated, duration: duration, completion: completion)
+    }
 }
 
 public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     @Binding var isZooming: Bool
     @Binding var scaleValue: CGFloat
+    @Binding var shouldResetZoom: Bool
+    private var resetTimeInterval: TimeInterval = 0.2
     private let content: Content
     
-    public init(isZooming: Binding<Bool>, scaleValue: Binding<CGFloat>,@ViewBuilder content: () -> Content) {
+    public init(isZooming: Binding<Bool>, scaleValue: Binding<CGFloat>,shouldResetZoom: Binding<Bool>,resetTimeInterval: TimeInterval = 0.2,@ViewBuilder content: () -> Content) {
         self._isZooming = isZooming
+        self._shouldResetZoom = shouldResetZoom
         self._scaleValue = scaleValue
+        self.resetTimeInterval = resetTimeInterval
         self.content = content()
     }
     
@@ -93,10 +100,18 @@ public struct SUBoundedZoomView<Content: View>: UIViewRepresentable {
     }
     
     public func updateUIView(_ uiView: SUBoundedZoomViewContainer, context: Context) {
+        if shouldResetZoom {
+                    uiView.resetZoom(duration: resetTimeInterval)
+                    // Reset the trigger on the next run loop to avoid continuous calling
+                    DispatchQueue.main.async {
+                        self.shouldResetZoom = false
+                    }
+                }
         context.coordinator.hostingController?.rootView = content
     }
     
     public class Coordinator: NSObject, @preconcurrency ZoomEngineDelegate {
+        
         @MainActor public func scaleValueChange(zoomValue: CGFloat) {
             self.parent.scaleValue = zoomValue
         }
